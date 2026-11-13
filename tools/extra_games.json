@@ -1,0 +1,24 @@
+{
+  "_notes": "Games added to the luduscore catalog through ScoringEngine(extra_games=...). Same schema as luduscore's games.json; classifications are this project's own, like luduscore's.",
+  "games": [
+    {
+      "id": "gta-6",
+      "title": "Grand Theft Auto VI",
+      "genres": ["action-adventure", "open-world"],
+      "difficulty": "easy-medium",
+      "playstyle": ["combat-heavy", "exploration"],
+      "multiplayer": false,
+      "story_vs_gameplay": 0.45
+    },
+    {
+      "id": "inside-limbo-double-pack",
+      "title": "Inside / Limbo Double Pack",
+      "genres": ["puzzle-platformer"],
+      "difficulty": "easy-medium",
+      "playstyle": ["puzzle-lite", "story-driven", "exploration"],
+      "multiplayer": false,
+      "story_vs_gameplay": 0.5,
+      "tags": ["atmospheric", "minimal-dialogue", "dark-tone", "black-and-white-art", "trial-and-error-puzzles"]
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "name": "launch-rush",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "scripts": {
+    "start": "node --env-file-if-exists=.env src/api.js",
+    "test": "node --env-file-if-exists=.env --test --test-concurrency=1 \"test/**/*.test.js\"",
+    "migrate": "node --env-file=.env db/migrate.js"
+  },
+  "dependencies": {
+    "bullmq": "6.3.19",
+    "express": "5.3.0",
+    "ioredis": "6.0.0",
+    "pg": "^8.23.1",
+    "pino": "10.4.0"
+  }
+}
