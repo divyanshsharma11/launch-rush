@@ -49,6 +49,8 @@ beforeEach(async () => {
   if (shop) await shop.remove();
   for (const id of runIds.splice(0)) await redis.deleteRun(id);
   shop = await createTestShop({ stockTotal: 5 });
+  while ((await runs.cleanup()).runsDeleted > 0); // old ended runs left in a development database would change the cleanup counts
+  erpCalls.length = 0;
 });
 
 after(async () => {

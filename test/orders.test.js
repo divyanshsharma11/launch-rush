@@ -123,7 +123,8 @@ test('run buy: competes in the run pool; one active order per buyer; wrong game,
   assert.deepEqual(await redis.stockLeft([shopPool(shop.gameId), runPool(runId)]), [1, 0]);
   const saved = await db.getOrder(first.orderId);
   assert.deepEqual([saved.runId, saved.buyerRef, saved.isSimulated], [runId, sessionId, false]);
-  assert.ok(saved.reservedUntil - Date.now() <= config.stock.runHoldMs);
+  const { rows: [{ now }] } = await shop.admin.query('SELECT now() AS now'); // reserved_until comes from the database clock
+  assert.ok(saved.reservedUntil - now <= config.stock.runHoldMs);
   await rejectsWith(orders.buy(sessionId, { gameId: shop.gameId, runId }), 'already_reserved', { orderId: first.orderId, state: 'reserved' });
 
   const ended = await newRun({ sessionId: await shop.newSession(), status: 'finished' });

@@ -6,7 +6,7 @@ import { join } from 'node:path';
 export function loadConfig(env) {
   return Object.freeze({
     api: Object.freeze({
-      host: env.API_HOST || '127.0.0.1', // all interfaces only when set, e.g. 0.0.0.0 at hosting (step 11)
+      host: env.API_HOST || '127.0.0.1', // all interfaces only when set, e.g. 0.0.0.0 in the containers (compose.prod.yaml)
       port: port(env, 'PORT'),
     }),
     payment: Object.freeze({
