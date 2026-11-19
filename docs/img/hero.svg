@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 410" width="1120" height="410" role="img" aria-labelledby="t d">
+  <title id="t">launch-rush: launch-day order pipeline</title>
+  <desc id="d">Buy, Pay, Webhook, Duplicate and Break it flow into the API, then Redis and BullMQ, the worker and the ERP simulator.</desc>
+  <style>
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; }
+    .sans { font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; }
+    .pill { fill: #0d1117; stroke-width: 1.4; }
+    .node { fill: #111826; stroke-width: 1.6; }
+    .wire { fill: none; stroke: #30363d; stroke-width: 1.4; }
+    .lbl { fill: #e6edf3; font-size: 13px; font-weight: 700; text-anchor: middle; }
+    .ttl { fill: #e6edf3; font-size: 15px; font-weight: 700; text-anchor: middle; }
+    .sub { fill: #8b949e; font-size: 11px; text-anchor: middle; }
+  </style>
+
+  <rect width="1120" height="410" rx="20" fill="#0d1117" stroke="#21262d"/>
+
+  <text x="54" y="58" class="mono" font-size="14"><tspan fill="#7ee787">~/launch-rush $</tspan><tspan fill="#e6edf3"> npm start</tspan></text>
+  <rect x="268" y="45" width="8" height="16" fill="#e6edf3">
+    <animate attributeName="opacity" values="1;1;0;0" keyTimes="0;0.5;0.5;1" dur="1.1s" repeatCount="indefinite"/>
+  </rect>
+  <text x="54" y="110" class="sans" font-size="36" font-weight="700" fill="#ffffff">Launch-day order pipeline</text>
+  <text x="54" y="138" class="mono" font-size="13" fill="#8b949e">stock gate · signed webhooks · queues &amp; workers · ERP simulator · live SSE</text>
+
+  <!-- visitor actions -->
+  <g class="mono">
+    <rect class="pill" x="54" y="160" width="160" height="32" rx="16" stroke="#4f7cff"/>
+    <text class="lbl" x="134" y="181">Buy</text>
+    <rect class="pill" x="54" y="200" width="160" height="32" rx="16" stroke="#ff9a6b"/>
+    <text class="lbl" x="134" y="221">Pay</text>
+    <rect class="pill" x="54" y="240" width="160" height="32" rx="16" stroke="#e5534b"/>
+    <text class="lbl" x="134" y="261">Webhook</text>
+    <rect class="pill" x="54" y="280" width="160" height="32" rx="16" stroke="#2dd4bf"/>
+    <text class="lbl" x="134" y="301">Duplicate</text>
+    <rect class="pill" x="54" y="320" width="160" height="32" rx="16" stroke="#3ddc84"/>
+    <text class="lbl" x="134" y="341">Break it</text>
+  </g>
+
+  <path class="wire" d="M214,176 C262,176 262,256 300,256"/>
+  <path class="wire" d="M214,216 C262,216 262,256 300,256"/>
+  <path class="wire" d="M214,256 C262,256 262,256 300,256"/>
+  <path class="wire" d="M214,296 C262,296 262,256 300,256"/>
+  <path class="wire" d="M214,336 C262,336 262,256 300,256"/>
+  <path class="wire" d="M470,256 L515,256"/>
+  <path class="wire" d="M705,256 L750,256"/>
+  <path class="wire" d="M880,256 L920,256"/>
+
+  <!-- pipeline nodes -->
+  <g>
+    <rect class="node" x="300" y="228" width="170" height="56" rx="10" stroke="#4f7cff"/>
+    <text class="ttl sans" x="385" y="252">API</text>
+    <text class="sub mono" x="385" y="270">verify · enqueue</text>
+    <rect class="node" x="515" y="228" width="190" height="56" rx="10" stroke="#f0a030"/>
+    <text class="ttl sans" x="610" y="252">Redis + BullMQ</text>
+    <text class="sub mono" x="610" y="270">stock gate · queue · retry</text>
+    <rect class="node" x="750" y="228" width="130" height="56" rx="10" stroke="#a78bfa"/>
+    <text class="ttl sans" x="815" y="252">Worker</text>
+    <text class="sub mono" x="815" y="270">fulfil · retry</text>
+    <rect class="node" x="920" y="228" width="146" height="56" rx="10" stroke="#3ddc84"/>
+    <text class="ttl sans" x="993" y="252">ERP simulator</text>
+    <text class="sub mono" x="993" y="270">orders · invoices</text>
+  </g>
+  <circle cx="300" cy="256" r="4.5" fill="#3ddc84"/>
+
+  <!-- flowing dots: visitor actions into the API -->
+  <g fill="#e6edf3">
+    <circle r="3.5"><animateMotion dur="2.8s" begin="0s" repeatCount="indefinite" path="M214,176 C262,176 262,256 300,256"/></circle>
+    <circle r="3.5"><animateMotion dur="2.8s" begin="0.55s" repeatCount="indefinite" path="M214,216 C262,216 262,256 300,256"/></circle>
+    <circle r="3.5"><animateMotion dur="2.8s" begin="1.1s" repeatCount="indefinite" path="M214,256 C262,256 262,256 300,256"/></circle>
+    <circle r="3.5"><animateMotion dur="2.8s" begin="1.65s" repeatCount="indefinite" path="M214,296 C262,296 262,256 300,256"/></circle>
+    <circle r="3.5"><animateMotion dur="2.8s" begin="2.2s" repeatCount="indefinite" path="M214,336 C262,336 262,256 300,256"/></circle>
+  </g>
+  <!-- flowing dots: along the pipeline -->
+  <g fill="#ffffff">
+    <circle r="3.5"><animateMotion dur="1.8s" begin="0s" repeatCount="indefinite" path="M470,256 L515,256"/></circle>
+    <circle r="3.5"><animateMotion dur="1.8s" begin="0.6s" repeatCount="indefinite" path="M705,256 L750,256"/></circle>
+    <circle r="3.5"><animateMotion dur="1.8s" begin="1.2s" repeatCount="indefinite" path="M880,256 L920,256"/></circle>
+  </g>
+
+  <text x="300" y="338" class="mono" font-size="13" fill="#8b949e"><tspan fill="#7ee787" font-weight="700">oversold 0 · orders lost 0</tspan> in every recorded load run</text>
+  <text x="300" y="362" class="mono" font-size="13" fill="#8b949e">no oversell · no lost or double invoices · demo only, nothing is sold</text>
+</svg>

@@ -1,4 +1,4 @@
-# Load run (plan Step 10)
+# Load run
 
 `storefront.js` is a [k6](https://grafana.com/docs/k6/latest/) script. Each iteration is one new visitor: create a session, buy a random game, pay, then poll the order every 0.5 s until it is finished. It uses only this project's own API (the mock payment provider and the ERP simulator are part of the system under test); real Stripe, Gmail and ERPNext are never called, and no email address is sent, so no email goes out.
 

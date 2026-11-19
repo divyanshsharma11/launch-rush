@@ -17,3 +17,6 @@ backups/
 
 # Scratch files kept on this PC only
 *-tmp.*
+
+# Python bytecode
+__pycache__/

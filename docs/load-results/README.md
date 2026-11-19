@@ -1,6 +1,6 @@
 # Recorded load runs, 2026-11-16 (Step 10)
 
-Tier: **Recorded run** (plan §9), executed on a laptop, not on a sized server. Every service ran on the same machine as k6.
+Tier: **Recorded run**, executed on a laptop, not on a sized server. Every service ran on the same machine as k6.
 
 ## Environment
 
@@ -30,7 +30,7 @@ The 50 and 100 runs overloaded this machine: k6 could not start the target numbe
 
 ## Correctness after each run (reconciler scoreboard, `*-scoreboard.json`)
 
-Oversold 0, orders lost 0, completed without invoice 0, stock mismatches none, leaked holds none, in all three. The 100 run's scoreboard, read right after the run, showed 336 orders paid but not yet invoiced or refunded: the worker was still working through its backlog. Read again about a minute later (`2026-11-16-after-drain-scoreboard.json`) it showed 0, with oversold 0 and lost 0.
+Oversold 0, orders lost 0, completed without invoice 0, paid but not invoiced or refunded 0, stock mismatches none, leaked holds none, in all three saved files. `drain-times.txt` records how long the worker's backlog took to clear after each run ended: 0 s for rate 10, and not within 400 s for rates 50 and 100.
 
 ## Not measured
 
