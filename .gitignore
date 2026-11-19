@@ -1,0 +1,22 @@
+# Dependencies (created by npm install)
+node_modules/
+
+# Secrets: real env files are never committed; the example file is
+.env
+.env.*
+!.env.example
+
+# Built admin page (admin/, npm run build there)
+admin/dist/
+
+# k6 binary for the load run (tools/load/README.md); downloaded, not committed
+tools/k6/
+
+# Database backups written by backup.sh
+backups/
+
+# Scratch files kept on this PC only
+*-tmp.*
+
+# Python bytecode
+__pycache__/

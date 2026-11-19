@@ -1,0 +1,191 @@
+:root {
+  --bg: #f6f7f9;
+  --card: #fff;
+  --text: #1b1f24;
+  --muted: #5b6570;
+  --line: #d9dee4;
+  --accent: #2457d6;
+  --ok: #17803d;
+  --bad: #c0261c;
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color: var(--text);
+  background: var(--bg);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #14171a;
+    --card: #1d2227;
+    --text: #e6e9ec;
+    --muted: #9aa4af;
+    --line: #333b43;
+    --accent: #7ea2ff;
+    --ok: #4fc57a;
+    --bad: #ff7b72;
+  }
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+}
+
+.plain {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+
+.page {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+.narrow {
+  max-width: 380px;
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+h1 {
+  font-size: 1.4rem;
+}
+
+h2 {
+  font-size: 1.1rem;
+  margin: 0 0 4px;
+}
+
+h3 {
+  font-size: 0.95rem;
+  margin: 16px 0 4px;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 16px;
+  margin: 16px 0;
+}
+
+.note {
+  color: var(--muted);
+  font-size: 0.85rem;
+  margin: 4px 0 8px;
+}
+
+.notice {
+  background: var(--card);
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  padding: 8px 12px;
+}
+
+.error,
+.bad {
+  color: var(--bad);
+}
+
+.ok {
+  color: var(--ok);
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+button {
+  font: inherit;
+  padding: 6px 12px;
+  border: 1px solid var(--accent);
+  background: transparent;
+  color: var(--accent);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+input[type='text'],
+input[type='password'],
+input:not([type]) {
+  font: inherit;
+  display: block;
+  width: 100%;
+  max-width: 320px;
+  box-sizing: border-box;
+  padding: 6px 8px;
+  margin: 4px 0 8px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--text);
+}
+
+label {
+  display: block;
+  font-size: 0.9rem;
+}
+
+label.check {
+  margin: 8px 0;
+}
+
+.control {
+  border-top: 1px solid var(--line);
+  padding: 8px 0 12px;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 8px;
+  margin: 8px 0;
+}
+
+.stats div {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 8px;
+}
+
+.stats dt {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.stats dd {
+  margin: 4px 0 0;
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 8px 0;
+  font-size: 0.9rem;
+}
+
+th,
+td {
+  text-align: left;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+  overflow-wrap: anywhere;
+}

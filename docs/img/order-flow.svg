@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 250" width="1120" height="250" role="img" aria-labelledby="t d">
+  <title id="t">launch-rush order states</title>
+  <desc id="d">The happy path of an order: reserved, payment_pending, paid, so_submitted, invoiced, completed. Below it, the side outcomes: hold expired, refund and failed.</desc>
+  <style>
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; }
+    .st { fill: #111826; stroke: #4f7cff; stroke-width: 1.6; }
+    .wire { fill: none; stroke: #30363d; stroke-width: 1.4; }
+    .lbl { fill: #e6edf3; font-size: 13px; font-weight: 700; text-anchor: middle; }
+    .side { fill: #111826; stroke-width: 1.4; }
+    .note { fill: #8b949e; font-size: 11px; text-anchor: middle; }
+  </style>
+
+  <rect width="1120" height="250" rx="20" fill="#0d1117" stroke="#21262d"/>
+  <text x="40" y="38" class="mono" font-size="13" fill="#7ee787">order state <tspan fill="#8b949e">· happy path, then the side outcomes</tspan></text>
+
+  <path class="wire" d="M110,100 L1010,100"/>
+
+  <g class="mono">
+    <rect class="st" x="40" y="78" width="140" height="44" rx="10"/>
+    <rect x="40" y="78" width="140" height="44" rx="10" fill="#4f7cff" opacity="0">
+      <animate attributeName="opacity" values="0;0.35;0.35;0;0" keyTimes="0;0.04;0.14;0.2;1" dur="7.2s" begin="0s" repeatCount="indefinite"/>
+    </rect>
+    <text class="lbl" x="110" y="105">reserved</text>
+
+    <rect class="st" x="220" y="78" width="140" height="44" rx="10"/>
+    <rect x="220" y="78" width="140" height="44" rx="10" fill="#4f7cff" opacity="0">
+      <animate attributeName="opacity" values="0;0.35;0.35;0;0" keyTimes="0;0.04;0.14;0.2;1" dur="7.2s" begin="1.2s" repeatCount="indefinite"/>
+    </rect>
+    <text class="lbl" x="290" y="105">payment_pending</text>
+
+    <rect class="st" x="400" y="78" width="140" height="44" rx="10"/>
+    <rect x="400" y="78" width="140" height="44" rx="10" fill="#4f7cff" opacity="0">
+      <animate attributeName="opacity" values="0;0.35;0.35;0;0" keyTimes="0;0.04;0.14;0.2;1" dur="7.2s" begin="2.4s" repeatCount="indefinite"/>
+    </rect>
+    <text class="lbl" x="470" y="105">paid</text>
+
+    <rect class="st" x="580" y="78" width="140" height="44" rx="10"/>
+    <rect x="580" y="78" width="140" height="44" rx="10" fill="#4f7cff" opacity="0">
+      <animate attributeName="opacity" values="0;0.35;0.35;0;0" keyTimes="0;0.04;0.14;0.2;1" dur="7.2s" begin="3.6s" repeatCount="indefinite"/>
+    </rect>
+    <text class="lbl" x="650" y="105">so_submitted</text>
+
+    <rect class="st" x="760" y="78" width="140" height="44" rx="10"/>
+    <rect x="760" y="78" width="140" height="44" rx="10" fill="#4f7cff" opacity="0">
+      <animate attributeName="opacity" values="0;0.35;0.35;0;0" keyTimes="0;0.04;0.14;0.2;1" dur="7.2s" begin="4.8s" repeatCount="indefinite"/>
+    </rect>
+    <text class="lbl" x="830" y="105">invoiced</text>
+
+    <rect class="st" x="940" y="78" width="140" height="44" rx="10" stroke="#3ddc84" style="stroke:#3ddc84"/>
+    <rect x="940" y="78" width="140" height="44" rx="10" fill="#3ddc84" opacity="0">
+      <animate attributeName="opacity" values="0;0.4;0.4;0;0" keyTimes="0;0.04;0.14;0.2;1" dur="7.2s" begin="6s" repeatCount="indefinite"/>
+    </rect>
+    <text class="lbl" x="1010" y="105">completed</text>
+  </g>
+
+  <circle r="4.5" fill="#ffffff">
+    <animateMotion dur="7.2s" repeatCount="indefinite" path="M110,100 L1010,100" calcMode="linear" keyPoints="0;1;1" keyTimes="0;0.8333;1"/>
+  </circle>
+
+  <!-- side outcomes -->
+  <g class="mono">
+    <rect class="side" x="40" y="160" width="200" height="44" rx="10" stroke="#f0a030"/>
+    <text class="lbl" x="140" y="180">reservation_expired</text>
+    <text class="note" x="140" y="196">hold ran out, copy handed on</text>
+
+    <rect class="side" x="280" y="160" width="200" height="44" rx="10" stroke="#ff9a6b"/>
+    <text class="lbl" x="380" y="180">refund_pending</text>
+    <text class="note" x="380" y="196">late payment, sold out</text>
+
+    <rect class="side" x="520" y="160" width="140" height="44" rx="10" stroke="#ff9a6b"/>
+    <text class="lbl" x="590" y="180">refunded</text>
+    <text class="note" x="590" y="196">refund confirmed</text>
+
+    <rect class="side" x="700" y="160" width="140" height="44" rx="10" stroke="#a78bfa"/>
+    <text class="lbl" x="770" y="180">waitlisted</text>
+    <text class="note" x="770" y="196">sold out at Buy</text>
+
+    <rect class="side" x="880" y="160" width="200" height="44" rx="10" stroke="#e5534b"/>
+    <text class="lbl" x="980" y="180">failed</text>
+    <text class="note" x="980" y="196">last retry failed, admin replay</text>
+  </g>
+</svg>

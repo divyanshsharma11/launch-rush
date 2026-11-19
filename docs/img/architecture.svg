@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1180 470" width="1180" height="470" role="img" aria-labelledby="t d">
+  <title id="t">launch-rush architecture</title>
+  <desc id="d">The browser talks to the API. The API uses Redis, PostgreSQL and the mock payment provider. The worker takes jobs from Redis and calls the ERP simulator and Gmail.</desc>
+  <style>
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; }
+    .sans { font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; }
+    .node { fill: #111826; stroke-width: 1.6; }
+    .wire { fill: none; stroke: #30363d; stroke-width: 1.4; }
+    .dash { fill: none; stroke: #30363d; stroke-width: 1.2; stroke-dasharray: 4 4; }
+    .ttl { fill: #e6edf3; font-size: 15px; font-weight: 700; text-anchor: middle; }
+    .sub { fill: #8b949e; font-size: 11px; text-anchor: middle; }
+    .edge { fill: #6e7681; font-size: 10px; text-anchor: middle; }
+  </style>
+
+  <rect width="1180" height="470" rx="20" fill="#0d1117" stroke="#21262d"/>
+  <text x="40" y="38" class="mono" font-size="13" fill="#7ee787">architecture <tspan fill="#8b949e">· four Node processes, Redis and PostgreSQL</tspan></text>
+
+  <!-- wires -->
+  <path class="wire" d="M190,215 L260,215"/>
+  <path class="wire" d="M260,235 L190,235"/>
+  <path class="wire" d="M430,205 C480,205 470,90 520,90"/>
+  <path class="wire" d="M430,215 L520,215"/>
+  <path class="wire" d="M520,235 L430,235"/>
+  <path class="wire" d="M430,245 C480,245 470,360 520,360"/>
+  <path class="wire" d="M690,80 L780,80"/>
+  <path class="wire" d="M780,100 L690,100"/>
+  <path class="wire" d="M930,90 L990,90"/>
+  <path class="wire" d="M930,110 C960,110 960,220 990,220"/>
+  <path class="wire" d="M855,120 C855,330 770,360 690,360"/>
+  <path class="dash" d="M605,250 L605,330"/>
+
+  <!-- nodes -->
+  <g>
+    <rect class="node" x="40" y="190" width="150" height="60" rx="10" stroke="#8b9bb0"/>
+    <text class="ttl sans" x="115" y="216">Browser</text>
+    <text class="sub mono" x="115" y="234">portfolio site</text>
+
+    <rect class="node" x="260" y="190" width="170" height="60" rx="10" stroke="#4f7cff"/>
+    <text class="ttl sans" x="345" y="214">API</text>
+    <text class="sub mono" x="345" y="231">Express · src/api.js</text>
+    <text class="sub mono" x="345" y="243">runs · admin · ingress</text>
+
+    <rect class="node" x="520" y="60" width="170" height="60" rx="10" stroke="#f0a030"/>
+    <text class="ttl sans" x="605" y="84">Redis + BullMQ</text>
+    <text class="sub mono" x="605" y="101">stock gate · queues</text>
+    <text class="sub mono" x="605" y="113">limits · pub/sub</text>
+
+    <rect class="node" x="520" y="190" width="170" height="60" rx="10" stroke="#ff7b72"/>
+    <text class="ttl sans" x="605" y="214">Payment provider</text>
+    <text class="sub mono" x="605" y="231">mock · own schema</text>
+    <text class="sub mono" x="605" y="243">paysim</text>
+
+    <rect class="node" x="780" y="60" width="150" height="60" rx="10" stroke="#a78bfa"/>
+    <text class="ttl sans" x="855" y="84">Worker</text>
+    <text class="sub mono" x="855" y="101">jobs · timers</text>
+    <text class="sub mono" x="855" y="113">src/worker.js</text>
+
+    <rect class="node" x="990" y="60" width="150" height="60" rx="10" stroke="#3ddc84"/>
+    <text class="ttl sans" x="1065" y="84">ERP simulator</text>
+    <text class="sub mono" x="1065" y="101">ERPNext-shaped</text>
+    <text class="sub mono" x="1065" y="113">own schema erpsim</text>
+
+    <rect class="node" x="990" y="190" width="150" height="60" rx="10" stroke="#e5534b"/>
+    <text class="ttl sans" x="1065" y="214">Gmail</text>
+    <text class="sub mono" x="1065" y="231">real, capped</text>
+    <text class="sub mono" x="1065" y="243">or mock email</text>
+
+    <path class="node" stroke="#2dd4bf" d="M520,345 a85,10 0 0 1 170,0 v40 a85,10 0 0 1 -170,0 z"/>
+    <path fill="none" stroke="#2dd4bf" stroke-opacity="0.6" stroke-width="1.2" d="M520,345 a85,10 0 0 0 170,0"/>
+    <text class="ttl sans" x="605" y="366">PostgreSQL</text>
+    <text class="sub mono" x="605" y="382">orders · events</text>
+  </g>
+
+  <!-- edge labels -->
+  <g class="mono">
+    <text class="edge" x="225" y="208">HTTPS</text>
+    <text class="edge" x="225" y="252">SSE</text>
+    <text class="edge" x="492" y="150">stock · queue</text>
+    <text class="edge" x="475" y="209">charge</text>
+    <text class="edge" x="475" y="250">webhook</text>
+    <text class="edge" x="440" y="320">SQL</text>
+    <text class="edge" x="735" y="72">jobs</text>
+    <text class="edge" x="735" y="116">wake-ups</text>
+    <text class="edge" x="960" y="82">REST</text>
+    <text class="edge" x="975" y="165">email</text>
+    <text class="edge" x="800" y="300">SQL</text>
+  </g>
+
+  <!-- flowing dots -->
+  <g fill="#e6edf3">
+    <circle r="3.5"><animateMotion dur="1.6s" begin="0s" repeatCount="indefinite" path="M190,215 L260,215"/></circle>
+    <circle r="3.5"><animateMotion dur="1.6s" begin="0.4s" repeatCount="indefinite" path="M260,235 L190,235"/></circle>
+    <circle r="3.5"><animateMotion dur="2s" begin="0.2s" repeatCount="indefinite" path="M430,205 C480,205 470,90 520,90"/></circle>
+    <circle r="3.5"><animateMotion dur="1.6s" begin="0.8s" repeatCount="indefinite" path="M430,215 L520,215"/></circle>
+    <circle r="3.5"><animateMotion dur="1.6s" begin="1.2s" repeatCount="indefinite" path="M520,235 L430,235"/></circle>
+    <circle r="3.5"><animateMotion dur="2s" begin="0.6s" repeatCount="indefinite" path="M430,245 C480,245 470,360 520,360"/></circle>
+    <circle r="3.5"><animateMotion dur="1.6s" begin="0s" repeatCount="indefinite" path="M690,80 L780,80"/></circle>
+    <circle r="3.5"><animateMotion dur="1.6s" begin="0.8s" repeatCount="indefinite" path="M780,100 L690,100"/></circle>
+    <circle r="3.5"><animateMotion dur="1.2s" begin="0.3s" repeatCount="indefinite" path="M930,90 L990,90"/></circle>
+    <circle r="3.5"><animateMotion dur="1.8s" begin="0.9s" repeatCount="indefinite" path="M930,110 C960,110 960,220 990,220"/></circle>
+    <circle r="3.5"><animateMotion dur="2.6s" begin="1.4s" repeatCount="indefinite" path="M855,120 C855,330 770,360 690,360"/></circle>
+  </g>
+</svg>
