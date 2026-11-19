@@ -5,6 +5,11 @@
   "license": "MIT",
   "scripts": {
     "start": "node --env-file-if-exists=.env src/api.js",
+    "worker": "node --env-file-if-exists=.env src/worker.js",
+    "provider": "node --env-file-if-exists=.env sims/payment-provider/server.js",
+    "erp-sim": "node --env-file-if-exists=.env sims/erp-simulator/server.js",
+    "admin-hash": "node src/admin-hash.js",
+    "gmail-connect": "node --env-file-if-exists=.env src/gmail-connect.js",
     "test": "node --env-file-if-exists=.env --test --test-concurrency=1 \"test/**/*.test.js\"",
     "migrate": "node --env-file=.env db/migrate.js"
   },
@@ -12,6 +17,7 @@
     "bullmq": "6.3.19",
     "express": "5.3.0",
     "ioredis": "6.0.0",
+    "opossum": "10.0.0",
     "pg": "^8.23.1",
     "pino": "10.4.0"
   }

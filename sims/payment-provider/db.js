@@ -1,20 +1,19 @@
-// Mock payment provider: all paysim SQL lives here (one repository, like src/services/db). PG* env vars, read by pg itself.
+// Mock payment provider: all paysim SQL. pg reads the PG* env vars itself.
 import pg from 'pg';
 
-export function createProviderDb({ logger }) {
-  const pool = new pg.Pool();
-  // Without a listener, an idle client's error would crash the process (node-postgres pool docs).
+// pg's defaults are "no timeout": a frozen DB would make every query wait forever.
+export function createProviderDb({ logger, connectTimeoutMs = 5_000, queryTimeoutMs = 5_000 }) {
+  const pool = new pg.Pool({ connectionTimeoutMillis: connectTimeoutMs, query_timeout: queryTimeoutMs });
+  // Without a listener, an idle client's error would crash the process.
   pool.on('error', (err) => logger.error({ err }, 'postgres idle client error'));
 
   return {
-    // Charge (design §5.2, §6). The payment, its payment.succeeded event and its deliveries are written in one
-    // transaction (transactional outbox, plan §5.6), so a charge never exists without its webhook queued.
-    // sends: 1, or 2 when a run payment's webhook is sent twice (§5.5).
-    // A repeated idempotency key creates nothing: 'existing' returns the saved payment, 'conflict' means the
-    // same key came with a different body (409, as Stripe).
+    // Payment, event and deliveries in one transaction. sends: 2 when a run payment's webhook is sent twice.
+    // Outcomes: 'created', 'existing' (same key and body), 'conflict' (same key, other body).
     async createCharge({ payment, event, sends = 1 }) {
-      const client = await pool.connect(); // a transaction needs one client for all its statements (node-postgres docs)
+      const client = await pool.connect();
       let created;
+      let failed;
       try {
         await client.query('BEGIN');
         const { rowCount } = await client.query(
@@ -35,15 +34,15 @@ export function createProviderDb({ logger }) {
         }
         await client.query('COMMIT');
       } catch (err) {
-        await client.query('ROLLBACK');
+        failed = err;
+        await rollback(client);
         throw err;
       } finally {
-        client.release();
+        client.release(failed);
       }
       if (created) return { outcome: 'created', payment };
 
-      // The key already exists, possibly from a request that won a race: under Read Committed this new statement
-      // sees its committed row. Compared in SQL, so the uuid comparison ignores letter case.
+      // The key exists (maybe from a racing request; this new statement sees its committed row).
       const { rows } = await pool.query(
         `SELECT id, order_id, amount_minor, currency, run_id,
                 (order_id = $2 AND amount_minor = $3 AND currency = $4) AS same_body
@@ -64,31 +63,51 @@ export function createProviderDb({ logger }) {
       };
     },
 
-    // Refund of the full payment (design §5.2 refund(paymentId), §6 key 'refund-<orderId>'). Checks in Stripe's order
-    // (plan §10 Step 3 decision 2026-11-13): the idempotency key first, then the payment, then the insert. The refund,
-    // its payment.refunded event and one delivery are written in one transaction, as for a charge.
-    // Outcomes: 'created', 'existing' (same key, same paymentId), 'conflict' (same key, other paymentId),
-    // 'payment_not_found', 'already_refunded' (refunded under another key; one refund per payment, 014).
+    // Full refund. Outcomes: 'created', 'existing', 'conflict', 'payment_not_found', 'already_refunded'.
     async createRefund({ refund, eventId }) {
       const client = await pool.connect();
+      let failed;
       try {
         await client.query('BEGIN');
         const result = await insertRefund(client, refund, eventId);
         await client.query('COMMIT');
         return result;
       } catch (err) {
-        await client.query('ROLLBACK');
+        failed = err;
+        await rollback(client);
         throw err;
       } finally {
-        client.release();
+        client.release(failed);
       }
     },
 
-    // Deliveries (plan §10 Step 3 decision 2026-11-13: lease claim). One statement claims up to `limit` due pending
-    // rows: SKIP LOCKED passes over rows another claimer holds, attempts is counted now, and next_attempt_at moves
-    // forward by the lease. The send happens after this, outside any transaction; if the process dies mid-send the
-    // row is still pending and is claimed again once the lease runs out (one duplicate at most; our ingress dedupes).
-    // Returns the exact event body to send. id is a bigint, which pg returns as a string.
+    // "Duplicate": sends the stored payment.succeeded event again (same id, same bytes).
+    async resendWebhook(paymentId) {
+      const { rows } = await pool.query(
+        `INSERT INTO paysim.deliveries (event_id)
+         SELECT id FROM paysim.events WHERE payment_id = $1 AND type = 'payment.succeeded'
+         RETURNING event_id`,
+        [paymentId],
+      );
+      return rows.length === 1 ? { outcome: 'queued', eventId: rows[0].event_id } : { outcome: 'payment_not_found' };
+    },
+
+    // Deliveries that gave up go back to pending with fresh attempts: recent shop events only (run events are
+    // cleaned up soon), and not when another send of the same event was delivered. Returns how many.
+    async redeliverFailed(maxAgeMs) {
+      const { rowCount } = await pool.query(
+        `UPDATE paysim.deliveries d
+         SET status = 'pending', attempts = 0, next_attempt_at = now()
+         FROM paysim.events e JOIN paysim.payments p ON p.id = e.payment_id
+         WHERE e.id = d.event_id AND d.status = 'failed' AND p.run_id IS NULL
+           AND d.created_at > now() - $1::integer * interval '1 millisecond'
+           AND NOT EXISTS (SELECT 1 FROM paysim.deliveries x WHERE x.event_id = d.event_id AND x.status = 'delivered')`,
+        [maxAgeMs],
+      );
+      return rowCount;
+    },
+
+    // Claims due deliveries with a lease: if the process dies mid-send, the row is claimed again after leaseMs.
     async claimDueDeliveries({ limit, leaseMs }) {
       const { rows } = await pool.query(
         `UPDATE paysim.deliveries d
@@ -105,7 +124,7 @@ export function createProviderDb({ logger }) {
       return rows.map((r) => ({ id: r.id, eventId: r.event_id, attempts: r.attempts, body: r.body }));
     },
 
-    // The updates after a send. Each only touches a row that is still pending, so a late update cannot undo a final state.
+    // Only pending rows change, so a late update cannot undo delivered/failed.
     async markDelivered(id) {
       await pool.query(`UPDATE paysim.deliveries SET status = 'delivered' WHERE id = $1 AND status = 'pending'`, [id]);
     },
@@ -122,8 +141,20 @@ export function createProviderDb({ logger }) {
         [id, error],
       );
     },
+    async ping() {
+      await pool.query('SELECT 1');
+    },
     close: () => pool.end(),
   };
+}
+
+// A stuck connection (query timeout) fails the ROLLBACK too; release(err) then discards it.
+async function rollback(client) {
+  try {
+    await client.query('ROLLBACK');
+  } catch {
+    // the caller gets the original error
+  }
 }
 
 async function insertRefund(client, refund, eventId) {
@@ -137,8 +168,7 @@ async function insertRefund(client, refund, eventId) {
   const payment = rows[0];
   if (!payment) return { outcome: 'payment_not_found' };
 
-  // No conflict target: skips on either unique rule (the key, or one refund per payment). Under Read Committed a
-  // racing insert of the same key is waited for, then skipped; the next statement sees its committed row.
+  // No conflict target: skips on the key or on one-refund-per-payment.
   const { rowCount } = await client.query(
     `INSERT INTO paysim.refunds (id, idempotency_key, payment_id) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING`,
     [refund.id, refund.idempotencyKey, refund.paymentId],
@@ -148,6 +178,7 @@ async function insertRefund(client, refund, eventId) {
   const body = JSON.stringify({
     id: eventId,
     type: 'payment.refunded',
+    created: Math.floor(Date.now() / 1000),
     data: { refundId: refund.id, paymentId: refund.paymentId, orderId: payment.order_id, amountMinor: payment.amount_minor, currency: payment.currency },
   });
   await client.query(
@@ -158,7 +189,6 @@ async function insertRefund(client, refund, eventId) {
   return { outcome: 'created', refund };
 }
 
-// The refund already saved under this key, compared with the request ('existing' or 'conflict'), or null.
 async function savedRefund(client, refund) {
   const { rows } = await client.query(
     'SELECT id, payment_id FROM paysim.refunds WHERE idempotency_key = $1',

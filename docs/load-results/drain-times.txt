@@ -1,0 +1,4 @@
+rate 10: backlog cleared 0 s after the run ended (-1 = not within 400 s)
+rate 50: backlog cleared -1 s after the run ended (-1 = not within 400 s)
+rate 100: backlog cleared -1 s after the run ended (-1 = not within 400 s)
+finished

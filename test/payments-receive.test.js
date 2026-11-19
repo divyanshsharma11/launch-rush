@@ -91,3 +91,15 @@ test('a wrong signature is rejected with invalid_signature, nothing stored', asy
   assert.equal(await countPaymentEvents(order.admin, id), 0);
   assert.equal(await queue.inspect.getJob(id), undefined);
 });
+
+test('a repeated event id is counted once per repeat in duplicates_blocked; the first delivery is not', async () => {
+  const id = `evt_${randomUUID()}`;
+  const count = async () =>
+    (await order.admin.query('SELECT count(*)::int AS n FROM duplicates_blocked WHERE order_id = $1', [order.orderId])).rows[0].n;
+  const before = await count();
+  await receive(event(id));
+  assert.equal(await count(), before);
+  await receive(event(id));
+  await receive(event(id));
+  assert.equal(await count(), before + 2);
+});

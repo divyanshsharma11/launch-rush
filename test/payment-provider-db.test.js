@@ -2,6 +2,7 @@
 import { test, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { randomBytes, randomUUID } from 'node:crypto';
+import { createServer as createNetServer } from 'node:net';
 import pg from 'pg';
 import { createProviderDb } from '../sims/payment-provider/db.js';
 import { captureLogger } from './helpers.js';
@@ -245,12 +246,17 @@ async function refundRows(paymentId) {
 test('new refund: refund + payment.refunded event with the payment data + one pending delivery', async () => {
   const payment = await paidCharge();
   const request = refundOf(payment);
+  const before = Math.floor(Date.now() / 1000);
   assert.deepEqual(await db.createRefund(request), { outcome: 'created', refund: request.refund });
+  const after = Math.floor(Date.now() / 1000);
   const { refunds, events, deliveries } = await refundRows(payment.id);
   assert.deepEqual(refunds, [{ id: request.refund.id, idempotency_key: request.refund.idempotencyKey }]);
   assert.equal(events.length, 1);
   assert.equal(events[0].id, request.eventId);
-  assert.deepEqual(JSON.parse(events[0].body), {
+  const { created, ...rest } = JSON.parse(events[0].body);
+  assert.ok(Number.isInteger(created) && created >= before && created <= after, 'created: unix seconds taken during the call');
+  assert.deepEqual(Object.keys(JSON.parse(events[0].body)), ['id', 'type', 'created', 'data']); // design §5.2 order
+  assert.deepEqual(rest, {
     id: request.eventId,
     type: 'payment.refunded',
     data: { refundId: request.refund.id, paymentId: payment.id, orderId: payment.orderId, amountMinor: 580000, currency: 'INR' },
@@ -323,4 +329,130 @@ test('a failing event insert rolls back the refund too (one transaction)', async
   request.eventId = 'evt_bad'; // breaks events_id_format
   await assert.rejects(db.createRefund(request), { code: '23514', constraint: 'events_id_format' });
   assert.equal((await refundRows(payment.id)).refunds.length, 0);
+});
+
+// Resend ("Duplicate", design §5.5).
+test('resend: a second pending delivery for the same payment.succeeded event, no new event', async () => {
+  const request = charge();
+  await db.createCharge(request);
+  assert.deepEqual(await db.resendWebhook(request.payment.id), { outcome: 'queued', eventId: request.event.id });
+  const { events, deliveries } = await rowsFor(request.payment.id);
+  assert.equal(events.length, 1);
+  assert.equal(events[0].body, request.event.body);
+  assert.equal(deliveries.filter((d) => d.status === 'pending').length, 2);
+});
+
+test('resend of a refunded payment queues its payment.succeeded event, not the refund event', async () => {
+  const request = charge();
+  await db.createCharge(request);
+  await db.createRefund(refundOf(request.payment));
+  assert.deepEqual(await db.resendWebhook(request.payment.id), { outcome: 'queued', eventId: request.event.id });
+  const { rows } = await admin.query('SELECT count(*)::int AS n FROM paysim.deliveries WHERE event_id = $1', [request.event.id]);
+  assert.equal(rows[0].n, 2);
+});
+
+test('resend for an unknown payment: payment_not_found, nothing written', async () => {
+  const { rows: before } = await admin.query('SELECT count(*)::int AS n FROM paysim.deliveries');
+  assert.deepEqual(await db.resendWebhook(`pay_${hex()}`), { outcome: 'payment_not_found' });
+  const { rows: after } = await admin.query('SELECT count(*)::int AS n FROM paysim.deliveries');
+  assert.equal(after[0].n, before[0].n);
+});
+
+// Redelivery of failed deliveries (design §6).
+const DAY = 86_400_000;
+const setStatus = (eventId, status) => admin.query('UPDATE paysim.deliveries SET status = $2 WHERE event_id = $1', [eventId, status]);
+
+test('redeliverFailed: a failed shop delivery goes back to pending with fresh attempts and is claimed again', async () => {
+  const request = charge();
+  await db.createCharge(request);
+  await admin.query("UPDATE paysim.deliveries SET status = 'failed', attempts = 13 WHERE event_id = $1", [request.event.id]);
+  assert.ok((await db.redeliverFailed(DAY)) >= 1);
+  assert.deepEqual((await rowsFor(request.payment.id)).deliveries, [{ status: 'pending', attempts: 0 }]);
+  assert.equal((await db.claimDueDeliveries(LEASE)).filter((d) => d.eventId === request.event.id).length, 1);
+});
+
+test('redeliverFailed: leaves run events, old deliveries, other statuses and events already delivered alone', async () => {
+  const run = charge({ runId: randomUUID() });
+  const old = charge();
+  const pending = charge();
+  const delivered = charge();
+  for (const request of [run, old, pending, delivered]) await db.createCharge(request);
+  await setStatus(run.event.id, 'failed');
+  await setStatus(old.event.id, 'failed');
+  await admin.query("UPDATE paysim.deliveries SET created_at = now() - interval '2 days' WHERE event_id = $1", [old.event.id]);
+  await db.resendWebhook(delivered.payment.id);
+  await admin.query(
+    `UPDATE paysim.deliveries SET status = CASE WHEN id = (SELECT min(id) FROM paysim.deliveries WHERE event_id = $1)
+       THEN 'delivered' ELSE 'failed' END WHERE event_id = $1`,
+    [delivered.event.id],
+  );
+
+  await db.redeliverFailed(DAY);
+  for (const [request, status] of [[run, 'failed'], [old, 'failed'], [pending, 'pending']]) {
+    assert.equal((await rowsFor(request.payment.id)).deliveries[0].status, status);
+  }
+  assert.deepEqual((await rowsFor(delivered.payment.id)).deliveries.map((d) => d.status).sort(), ['delivered', 'failed']);
+});
+
+// Timeouts (pg defaults are "no timeout"). Short values here; the defaults are 5 s.
+test('connect timeout: a DB that accepts but never answers fails after connectTimeoutMs instead of waiting', async () => {
+  const sockets = [];
+  const silent = createNetServer((s) => sockets.push(s)).listen(0, '127.0.0.1'); // a frozen DB stand-in
+  await new Promise((resolve) => silent.once('listening', resolve));
+  const saved = { host: process.env.PGHOST, port: process.env.PGPORT };
+  process.env.PGHOST = '127.0.0.1'; // pg reads PG* when it creates a client, i.e. at the first query
+  process.env.PGPORT = String(silent.address().port);
+  const frozen = createProviderDb({ logger: captureLogger().logger, connectTimeoutMs: 300 });
+  try {
+    const started = Date.now();
+    await assert.rejects(frozen.ping(), /connection timeout/);
+    assert.ok(Date.now() - started < 2_000);
+  } finally {
+    process.env.PGHOST = saved.host;
+    process.env.PGPORT = saved.port;
+    await frozen.close();
+    for (const s of sockets) s.destroy();
+    silent.close();
+  }
+});
+
+test('query timeout, single statement: a query with no reply fails with Query read timeout; the pool keeps working', async () => {
+  const short = createProviderDb({ logger: captureLogger().logger, queryTimeoutMs: 300 });
+  const { id } = await newDelivery();
+  const other = new pg.Client(); // holds the row lock, so the UPDATE gets no reply
+  await other.connect();
+  await other.query('BEGIN');
+  await other.query('SELECT id FROM paysim.deliveries WHERE id = $1 FOR UPDATE', [id]);
+  try {
+    const started = Date.now();
+    await assert.rejects(short.markDelivered(id), /Query read timeout/);
+    assert.ok(Date.now() - started < 2_000);
+  } finally {
+    await other.query('ROLLBACK');
+    await other.end();
+  }
+  await short.ping(); // the stuck client was discarded, not reused
+  await short.close();
+});
+
+test('query timeout inside a transaction: original error thrown, the stuck session never commits, the key works again', async () => {
+  const short = createProviderDb({ logger: captureLogger().logger, queryTimeoutMs: 300 });
+  const first = charge();
+  const other = new pg.Client(); // an uncommitted payment with the same key: our INSERT waits on it
+  await other.connect();
+  await other.query('BEGIN');
+  await other.query(
+    `INSERT INTO paysim.payments (id, idempotency_key, order_id, amount_minor, currency) VALUES ($1, $2, $3, $4, 'INR')`,
+    [first.payment.id, first.payment.idempotencyKey, first.payment.orderId, first.payment.amountMinor],
+  );
+  const stuck = charge({ orderId: first.payment.orderId });
+  await assert.rejects(short.createCharge(stuck), /Query read timeout/);
+  await other.query('ROLLBACK');
+  await other.end();
+  // The stuck session's INSERT may still run once the lock is free, but it is never committed (session ended).
+  const retry = charge({ orderId: first.payment.orderId });
+  assert.equal((await short.createCharge(retry)).outcome, 'created');
+  const { rows } = await admin.query('SELECT id FROM paysim.payments WHERE idempotency_key = $1', [first.payment.idempotencyKey]);
+  assert.deepEqual(rows.map((r) => r.id), [retry.payment.id]);
+  await short.close();
 });

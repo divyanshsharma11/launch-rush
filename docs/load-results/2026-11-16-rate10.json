@@ -1,0 +1,242 @@
+{
+    "metrics": {
+        "http_req_sending": {
+            "p(95)": 0.5088,
+            "avg": 0.04452877014793552,
+            "min": 0,
+            "med": 0,
+            "max": 13.0966,
+            "p(90)": 0
+        },
+        "data_sent": {
+            "count": 860514,
+            "rate": 9043.63301805009
+        },
+        "http_req_blocked": {
+            "min": 0,
+            "med": 0,
+            "max": 21.2546,
+            "p(90)": 0,
+            "p(95)": 0,
+            "avg": 0.04926824906160302
+        },
+        "checks": {
+            "passes": 2367,
+            "fails": 0,
+            "value": 1
+        },
+        "http_req_duration": {
+            "avg": 20.72274839920516,
+            "min": 4.2427,
+            "med": 14.7234,
+            "max": 234.4494,
+            "p(90)": 40.996520000000004,
+            "p(95)": 51.03854
+        },
+        "http_req_duration{expected_response:true}": {
+            "med": 14.7234,
+            "max": 234.4494,
+            "p(90)": 40.996520000000004,
+            "p(95)": 51.03854,
+            "avg": 20.72274839920516,
+            "min": 4.2427
+        },
+        "vus": {
+            "max": 21,
+            "value": 1,
+            "min": 1
+        },
+        "iteration_duration": {
+            "med": 1598.3668,
+            "max": 2778.5349,
+            "p(90)": 2146.32302,
+            "p(95)": 2188.9646,
+            "avg": 1494.1722832699625,
+            "min": 545.5316
+        },
+        "http_req_receiving": {
+            "med": 0,
+            "max": 5.5209,
+            "p(90)": 0.6396000000000003,
+            "p(95)": 1.0124,
+            "avg": 0.21177050121439617,
+            "min": 0
+        },
+        "iterations": {
+            "count": 789,
+            "rate": 8.292051554351843
+        },
+        "http_req_waiting": {
+            "p(95)": 50.86557999999995,
+            "avg": 20.466449127842793,
+            "min": 4.0906,
+            "med": 14.432,
+            "max": 234.4494,
+            "p(90)": 40.72300000000003
+        },
+        "orders_completed": {
+            "count": 789,
+            "rate": 8.292051554351843
+        },
+        "http_req_tls_handshaking": {
+            "avg": 0,
+            "min": 0,
+            "med": 0,
+            "max": 0,
+            "p(90)": 0,
+            "p(95)": 0
+        },
+        "http_req_failed": {
+            "passes": 0,
+            "fails": 4529,
+            "value": 0
+        },
+        "data_received": {
+            "rate": 22957.75858367875,
+            "count": 2184462
+        },
+        "vus_max": {
+            "value": 50,
+            "min": 50,
+            "max": 50
+        },
+        "http_req_connecting": {
+            "avg": 0.03134990064031798,
+            "min": 0,
+            "med": 0,
+            "max": 21.2546,
+            "p(90)": 0,
+            "p(95)": 0
+        },
+        "pay_to_completed_ms": {
+            "p(90)": 2061,
+            "p(95)": 2079,
+            "avg": 1412.4169835234475,
+            "min": 508,
+            "med": 1532,
+            "max": 2686
+        },
+        "http_reqs": {
+            "count": 4529,
+            "rate": 47.59784726192585
+        }
+    },
+    "setup_data": {
+        "gameIds": [
+            "alan-wake-2",
+            "a-plague-tale-innocence",
+            "armored-core-6",
+            "assassins-creed-valhalla",
+            "astro-bot",
+            "a-way-out",
+            "baldurs-gate-3",
+            "battlefield-2042",
+            "bloodborne",
+            "cod-mw3",
+            "celeste",
+            "control",
+            "cuphead",
+            "cyberpunk-2077",
+            "dark-souls-3",
+            "days-gone",
+            "dead-cells",
+            "dead-space-remake",
+            "death-stranding",
+            "demons-souls-2020",
+            "detroit-become-human",
+            "diablo-4",
+            "disco-elysium",
+            "dragons-dogma-2",
+            "ea-sports-fc-24",
+            "elden-ring",
+            "f1-24",
+            "ff7-remake",
+            "final-fantasy-16",
+            "ghost-of-tsushima",
+            "ghostrunner",
+            "god-of-war-2018",
+            "god-of-war-ragnarok",
+            "gta-5",
+            "gta-6",
+            "gran-turismo-7",
+            "gris",
+            "hades",
+            "helldivers-2",
+            "hi-fi-rush",
+            "hollow-knight",
+            "horizon-forbidden-west",
+            "horizon-zero-dawn",
+            "inside-limbo-double-pack",
+            "it-takes-two",
+            "journey",
+            "lego-star-wars-skywalker-saga",
+            "lies-of-p",
+            "like-a-dragon-infinite-wealth",
+            "little-nightmares-2",
+            "lords-of-the-fallen-2023",
+            "spider-man-2",
+            "spider-man-miles-morales",
+            "mlb-the-show-24",
+            "monster-hunter-world",
+            "mortal-kombat-1",
+            "nba-2k24",
+            "nier-automata",
+            "nioh-2",
+            "octopath-traveler-2",
+            "persona-3-reload",
+            "persona-5-royal",
+            "ratchet-clank-rift-apart",
+            "red-dead-redemption-2",
+            "remnant-2",
+            "resident-evil-4-remake",
+            "resident-evil-village",
+            "returnal",
+            "sekiro",
+            "star-wars-jedi-fallen-order",
+            "star-wars-jedi-survivor",
+            "stray",
+            "street-fighter-6",
+            "tales-of-arise",
+            "tekken-8",
+            "terraria",
+            "the-last-of-us-part-1",
+            "the-last-of-us-part-2",
+            "the-quarry",
+            "the-division-2",
+            "tunic",
+            "uncharted-4",
+            "uncharted-lost-legacy",
+            "wo-long-fallen-dynasty",
+            "wwe-2k24"
+        ]
+    },
+    "root_group": {
+        "id": "d41d8cd98f00b204e9800998ecf8427e",
+        "groups": {},
+        "checks": {
+            "session created": {
+                "id": "fe128c16ddba45c98ab17e9ba70507fd",
+                "passes": 789,
+                "fails": 0,
+                "name": "session created",
+                "path": "::session created"
+            },
+            "buy accepted": {
+                "path": "::buy accepted",
+                "id": "e51d3ce7495dbae47a77bdc4976320b3",
+                "passes": 789,
+                "fails": 0,
+                "name": "buy accepted"
+            },
+            "pay accepted": {
+                "name": "pay accepted",
+                "path": "::pay accepted",
+                "id": "55b548001b00169da8f062db2d181d6e",
+                "passes": 789,
+                "fails": 0
+            }
+        },
+        "name": "",
+        "path": ""
+    }
+}

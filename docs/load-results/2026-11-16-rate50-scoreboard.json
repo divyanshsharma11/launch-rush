@@ -1,0 +1,12 @@
+{
+  "sold": 11862,
+  "stock": 25802,
+  "oversold": 0,
+  "lost": 0,
+  "paidNotInvoicedOrRefunded": 0,
+  "completedWithoutInvoice": 0,
+  "duplicatesBlocked": 0,
+  "stockMismatches": [],
+  "checkedAt": "2026-11-15T21:32:45.709Z",
+  "leakedHolds": []
+}

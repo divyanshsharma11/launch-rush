@@ -6,6 +6,15 @@ const EVENT_ID = /^[^0-9:][^:]*$/; // reused as a BullMQ job id; same rule as mi
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export function createPayments({ verifier, db, webhookQueue, logger }) {
+  // Feeds the scoreboard's "duplicates blocked". Best effort: a failed count must not fail the webhook.
+  async function countDuplicate(orderId) {
+    try {
+      await db.recordDuplicate(orderId, 'webhook');
+    } catch (err) {
+      logger.warn({ err, orderId }, 'duplicate webhook not counted');
+    }
+  }
+
   return {
     async receiveWebhook(rawBody, headers) {
       const event = verifier.verifyInbound(rawBody, headers);
@@ -18,6 +27,7 @@ export function createPayments({ verifier, db, webhookQueue, logger }) {
 
       const { id: eventId, type, data } = event;
       logger.info({ eventId, type, orderId: data.orderId, duplicate: !stored }, 'payment event received');
+      if (!stored) await countDuplicate(data.orderId);
     },
   };
 }

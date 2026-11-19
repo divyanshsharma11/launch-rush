@@ -5,3 +5,15 @@ node_modules/
 .env
 .env.*
 !.env.example
+
+# Built admin page (admin/, npm run build there)
+admin/dist/
+
+# k6 binary for the load run (tools/load/README.md); downloaded, not committed
+tools/k6/
+
+# Database backups written by backup.sh
+backups/
+
+# Scratch files kept on this PC only
+*-tmp.*

@@ -1,0 +1,75 @@
+# The whole backend in containers: docker compose --env-file .env.prod -f compose.prod.yaml up -d --build
+# Settings come from .env.prod (git-ignored), including the PG* values of the hosted Postgres (Supabase). Only the API publishes
+# a port; Redis and the simulators stay on the private network. The migrations run before the services start.
+# A separate project name keeps its volumes apart from compose.yaml.
+name: launch-rush-prod
+
+x-app: &app
+  image: launch-rush:latest
+  env_file: .env.prod
+  environment:
+    NODE_EXTRA_CA_CERTS: /certs/supabase-ca.crt
+    REDIS_HOST: redis
+    API_HOST: 0.0.0.0
+    PAYMENT_PROVIDER_HOST: 0.0.0.0
+    ERP_SIM_HOST: 0.0.0.0
+    PAYMENT_WEBHOOK_URL: http://api:${PORT:-3000}/webhooks/payment
+    PAYMENT_PROVIDER_URL: http://provider:${PAYMENT_PROVIDER_PORT:-3001}
+    ERP_SIM_URL: http://erp-sim:${ERP_SIM_PORT:-3002}
+    ADMIN_ORIGIN: ${ADMIN_ORIGIN:-http://127.0.0.1:3000}
+  volumes:
+    - ./certs/supabase-ca.crt:/certs/supabase-ca.crt:ro
+  restart: always
+  logging:
+    driver: json-file
+    options:
+      max-size: "10m"
+      max-file: "3"
+
+services:
+  redis:
+    image: redis:8
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory-policy", "noeviction"]
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+    restart: always
+
+  migrate:
+    <<: *app
+    build: .
+    command: ["node", "db/migrate.js"]
+    restart: "no"
+
+  api:
+    <<: *app
+    command: ["node", "src/api.js"]
+    ports:
+      - "127.0.0.1:${PORT:-3000}:${PORT:-3000}"
+    depends_on: &ready
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+
+  worker:
+    <<: *app
+    command: ["node", "src/worker.js"]
+    depends_on: *ready
+
+  provider:
+    <<: *app
+    command: ["node", "sims/payment-provider/server.js"]
+    depends_on: *ready
+
+  erp-sim:
+    <<: *app
+    command: ["node", "sims/erp-simulator/server.js"]
+    depends_on: *ready
+
+volumes:
+  redis-data:

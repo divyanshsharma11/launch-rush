@@ -1,10 +1,12 @@
 // Smoke test: starts the real src/api.js as a child process on a free port, against the real containers.
-// Only rejected requests are sent, so nothing is stored or queued.
+// Only rejected requests are sent, except the rate-limit test, which cleans up its sessions and counters.
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import { createServer } from 'node:net';
 import { createInterface } from 'node:readline';
+import pg from 'pg';
+import { Redis } from 'ioredis';
 
 let child;
 let baseUrl;
@@ -35,7 +37,7 @@ before(async () => {
 });
 
 after(() => {
-  child.kill(); // Windows: unconditional termination (Node docs); clean shutdown is roadmap Step 6
+  child.kill(); // Windows: unconditional termination (Node docs); a clean shutdown is tested in-process
 });
 
 test('startup logs waiting for redis, then listening on 127.0.0.1 by default', () => {
@@ -58,4 +60,43 @@ test('unknown route: 404 not_found as JSON', async () => {
   assert.equal(res.status, 404);
   assert.match(res.headers.get('content-type'), /application\/json/);
   assert.deepEqual(await res.json(), { error: { code: 'not_found', message: 'route not found' } });
+});
+
+test('CORS and the stream are wired: preflight answered, an unknown session on the stream gets 401 with the origin', async () => {
+  const origin = process.env.PORTFOLIO_ORIGIN || 'http://localhost:5173';
+  const preflight = await fetch(`${baseUrl}/api/orders`, {
+    method: 'OPTIONS', headers: { Origin: origin, 'Access-Control-Request-Method': 'POST' },
+  });
+  assert.equal(preflight.status, 204);
+  assert.equal(preflight.headers.get('access-control-allow-origin'), origin);
+
+  const stream = await fetch(`${baseUrl}/api/stream?session=${'0'.repeat(8)}-0000-4000-8000-${'0'.repeat(12)}`);
+  assert.equal(stream.status, 401);
+  assert.equal((await stream.json()).error.code, 'session_required');
+  assert.equal(stream.headers.get('access-control-allow-origin'), origin);
+});
+
+test('the rate limiter is wired: the 11th session from one IP in a minute gets 429', async () => {
+  const admin = new pg.Client();
+  const redis = new Redis({ host: process.env.REDIS_HOST, port: Number(process.env.REDIS_PORT) });
+  const sessionIds = [];
+  try {
+    await admin.connect();
+    const old = await redis.keys('ratelimit:sessionCreate:*'); // left by other tests that create sessions
+    if (old.length) await redis.del(...old);
+    let last;
+    for (let i = 0; i < 11; i += 1) {
+      last = await fetch(`${baseUrl}/api/session`, { method: 'POST' });
+      if (last.status === 201) sessionIds.push((await last.json()).sessionId);
+    }
+    assert.equal(sessionIds.length, 10);
+    assert.equal(last.status, 429);
+    assert.equal((await last.json()).error.code, 'rate_limited');
+  } finally {
+    await admin.query('DELETE FROM sessions WHERE id = ANY($1)', [sessionIds]);
+    const counters = await redis.keys('ratelimit:sessionCreate:*');
+    if (counters.length) await redis.del(...counters);
+    await admin.end();
+    redis.disconnect();
+  }
 });

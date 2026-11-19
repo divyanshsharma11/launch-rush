@@ -1,4 +1,4 @@
-// Webhook queue (design §5.2 step 4) against the real Redis container (plan §14 item 11).
+// Webhook queue (design §5.2 step 4) against the real Redis container.
 // A unique queue name per run; obliterate() removes it at the end.
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';

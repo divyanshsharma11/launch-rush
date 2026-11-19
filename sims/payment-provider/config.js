@@ -1,30 +1,28 @@
-// Mock payment provider: env vars + configurable starting values. Same style as src/config.js; sims/ may import
-// only src/logger.js, so the small helpers below are repeated here. Only the entry point passes process.env.
-// The pg library reads the PG* variables itself (the paysim schema lives in the same database).
+// Mock payment provider settings: env vars plus starting values (not measured). pg reads PG* itself.
 export function loadProviderConfig(env) {
   return Object.freeze({
-    host: env.PAYMENT_PROVIDER_HOST || '127.0.0.1', // all interfaces only when set, e.g. 0.0.0.0 at hosting (step 11)
+    host: env.PAYMENT_PROVIDER_HOST || '127.0.0.1',
     port: port(env, 'PAYMENT_PROVIDER_PORT'),
-    webhookSecret: secret(env, 'PAYMENT_WEBHOOK_SECRET'), // signs webhooks (design §5.2)
-    apiKey: secret(env, 'PAYMENT_API_KEY'), // Bearer key for our internal API, separate from the webhook secret
-    webhookUrl: httpUrl(env, 'PAYMENT_WEBHOOK_URL'), // our ingress, e.g. http://127.0.0.1:3000/webhooks/payment
-    // Webhook delivery retries: truncated exponential backoff with jitter, the same rule as design §7.
-    // Wait before retry n = min(baseDelayMs * 2^(n-1), maxDelayMs), randomly 50-100% of it. Total ≈ 35-70 min,
-    // which must stay below the run-cleanup delay (design §5.5). Starting values, not measured.
+    webhookSecret: secret(env, 'PAYMENT_WEBHOOK_SECRET'),
+    apiKey: secret(env, 'PAYMENT_API_KEY'),
+    webhookUrl: httpUrl(env, 'PAYMENT_WEBHOOK_URL'),
+    // All retries take about 35-70 min; must stay below the run cleanup delay.
     delivery: Object.freeze({
       retries: 12,
       baseDelayMs: 10_000,
       maxDelayMs: 600_000,
       jitter: 0.5,
-      timeoutMs: 10_000, // per attempt; opossum's default timeout (design §7)
-      leaseMs: 30_000, // a claimed delivery is re-sent after this if the process died mid-send; must be > timeoutMs
+      timeoutMs: 10_000,
+      leaseMs: 30_000, // must be > timeoutMs
+      pollMs: 1_000,
+      batchSize: 10,
     }),
-    runDuplicateShare: 0.05, // share of run payments whose webhook is sent twice, same event id (design §5.5)
+    runDuplicateShare: 0.05, // share of run payments whose webhook is sent twice
     log: Object.freeze({ level: logLevel(env, 'LOG_LEVEL') }),
   });
 }
 
-const LOG_LEVELS = ['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']; // pino's levels
+const LOG_LEVELS = ['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent'];
 
 function logLevel(env, name) {
   const value = env[name] || 'info';
@@ -44,8 +42,7 @@ function port(env, name) {
   return value;
 }
 
-// RFC 2104 §3: an HMAC key shorter than the hash output (32 bytes for SHA-256) is "strongly discouraged".
-// The API key uses the same minimum. Error messages name the variable, never its value.
+// Error messages name the variable, never its value.
 function secret(env, name) {
   const value = required(env, name);
   if (Buffer.byteLength(value) < 32) throw new Error(`${name} must be at least 32 bytes`);

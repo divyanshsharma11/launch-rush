@@ -26,7 +26,7 @@ test('delivery and duplicate starting values match the decisions', () => {
   const config = loadProviderConfig(ENV);
   assert.deepEqual(
     { ...config.delivery },
-    { retries: 12, baseDelayMs: 10_000, maxDelayMs: 600_000, jitter: 0.5, timeoutMs: 10_000, leaseMs: 30_000 },
+    { retries: 12, baseDelayMs: 10_000, maxDelayMs: 600_000, jitter: 0.5, timeoutMs: 10_000, leaseMs: 30_000, pollMs: 1_000, batchSize: 10 },
   );
   assert.equal(config.runDuplicateShare, 0.05);
 });

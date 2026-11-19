@@ -1,0 +1,250 @@
+{
+    "root_group": {
+        "path": "",
+        "id": "d41d8cd98f00b204e9800998ecf8427e",
+        "groups": {},
+        "checks": {
+            "session created": {
+                "id": "fe128c16ddba45c98ab17e9ba70507fd",
+                "passes": 2302,
+                "fails": 0,
+                "name": "session created",
+                "path": "::session created"
+            },
+            "buy accepted": {
+                "passes": 2302,
+                "fails": 0,
+                "name": "buy accepted",
+                "path": "::buy accepted",
+                "id": "e51d3ce7495dbae47a77bdc4976320b3"
+            },
+            "pay accepted": {
+                "path": "::pay accepted",
+                "id": "55b548001b00169da8f062db2d181d6e",
+                "passes": 2278,
+                "fails": 0,
+                "name": "pay accepted"
+            }
+        },
+        "name": ""
+    },
+    "metrics": {
+        "data_received": {
+            "count": 24578245,
+            "rate": 195800.85441628634
+        },
+        "orders_completed": {
+            "count": 722,
+            "rate": 5.751762051707058
+        },
+        "http_req_failed": {
+            "fails": 48105,
+            "passes": 0,
+            "value": 0
+        },
+        "http_req_duration{expected_response:true}": {
+            "avg": 1748.6015650576956,
+            "min": 5.9819,
+            "med": 1849.0524,
+            "max": 4972.554,
+            "p(90)": 3011.12366,
+            "p(95)": 3233.9993
+        },
+        "checks": {
+            "passes": 6882,
+            "fails": 0,
+            "value": 1
+        },
+        "dropped_iterations": {
+            "count": 1587,
+            "rate": 12.642723512547231
+        },
+        "pay_to_completed_ms": {
+            "p(95)": 57924.049999999996,
+            "avg": 25961.404432132964,
+            "min": 1019,
+            "med": 23920,
+            "max": 63034,
+            "p(90)": 54731.5
+        },
+        "data_sent": {
+            "rate": 77146.3131278938,
+            "count": 9683926
+        },
+        "http_req_tls_handshaking": {
+            "avg": 0,
+            "min": 0,
+            "med": 0,
+            "max": 0,
+            "p(90)": 0,
+            "p(95)": 0
+        },
+        "http_req_blocked": {
+            "avg": 0.0999114229290097,
+            "min": 0,
+            "med": 0,
+            "max": 60.8406,
+            "p(90)": 0,
+            "p(95)": 0.5110799999999995
+        },
+        "http_req_sending": {
+            "p(90)": 0,
+            "p(95)": 0.5251799999999995,
+            "avg": 0.057828824446523396,
+            "min": 0,
+            "med": 0,
+            "max": 63.0349
+        },
+        "vus": {
+            "value": 988,
+            "min": 1,
+            "max": 1609
+        },
+        "http_reqs": {
+            "count": 48105,
+            "rate": 383.2250879464931
+        },
+        "http_req_receiving": {
+            "avg": 0.2198579191352253,
+            "min": 0,
+            "med": 0,
+            "max": 30.9261,
+            "p(90)": 0.6365599999999999,
+            "p(95)": 1.021959999999999
+        },
+        "http_req_connecting": {
+            "avg": 0.07220401829331675,
+            "min": 0,
+            "med": 0,
+            "max": 46.3765,
+            "p(90)": 0,
+            "p(95)": 0
+        },
+        "http_req_waiting": {
+            "p(95)": 3233.8784,
+            "avg": 1748.3238783141226,
+            "min": 5.4196,
+            "med": 1848.6361,
+            "max": 4972.554,
+            "p(90)": 3010.7292399999997
+        },
+        "orders_not_completed": {
+            "count": 592,
+            "rate": 4.716126225222408
+        },
+        "iterations": {
+            "count": 1314,
+            "rate": 10.467888276929466
+        },
+        "http_req_duration": {
+            "avg": 1748.6015650576956,
+            "min": 5.9819,
+            "med": 1849.0524,
+            "max": 4972.554,
+            "p(90)": 3011.12366,
+            "p(95)": 3233.9993
+        },
+        "vus_max": {
+            "value": 1610,
+            "min": 50,
+            "max": 1610
+        },
+        "iteration_duration": {
+            "p(90)": 66049.94410000001,
+            "p(95)": 66384.72110499999,
+            "avg": 42922.35057671232,
+            "min": 280.8727,
+            "med": 55350.858250000005,
+            "max": 68217.9368
+        }
+    },
+    "setup_data": {
+        "gameIds": [
+            "alan-wake-2",
+            "a-plague-tale-innocence",
+            "armored-core-6",
+            "assassins-creed-valhalla",
+            "astro-bot",
+            "a-way-out",
+            "baldurs-gate-3",
+            "battlefield-2042",
+            "bloodborne",
+            "cod-mw3",
+            "celeste",
+            "control",
+            "cuphead",
+            "cyberpunk-2077",
+            "dark-souls-3",
+            "days-gone",
+            "dead-cells",
+            "dead-space-remake",
+            "death-stranding",
+            "demons-souls-2020",
+            "detroit-become-human",
+            "diablo-4",
+            "disco-elysium",
+            "dragons-dogma-2",
+            "ea-sports-fc-24",
+            "elden-ring",
+            "f1-24",
+            "ff7-remake",
+            "final-fantasy-16",
+            "ghost-of-tsushima",
+            "ghostrunner",
+            "god-of-war-2018",
+            "god-of-war-ragnarok",
+            "gta-5",
+            "gta-6",
+            "gran-turismo-7",
+            "gris",
+            "hades",
+            "helldivers-2",
+            "hi-fi-rush",
+            "hollow-knight",
+            "horizon-forbidden-west",
+            "horizon-zero-dawn",
+            "inside-limbo-double-pack",
+            "it-takes-two",
+            "journey",
+            "lego-star-wars-skywalker-saga",
+            "lies-of-p",
+            "like-a-dragon-infinite-wealth",
+            "little-nightmares-2",
+            "lords-of-the-fallen-2023",
+            "spider-man-2",
+            "spider-man-miles-morales",
+            "mlb-the-show-24",
+            "monster-hunter-world",
+            "mortal-kombat-1",
+            "nba-2k24",
+            "nier-automata",
+            "nioh-2",
+            "octopath-traveler-2",
+            "persona-3-reload",
+            "persona-5-royal",
+            "ratchet-clank-rift-apart",
+            "red-dead-redemption-2",
+            "remnant-2",
+            "resident-evil-4-remake",
+            "resident-evil-village",
+            "returnal",
+            "sekiro",
+            "star-wars-jedi-fallen-order",
+            "star-wars-jedi-survivor",
+            "stray",
+            "street-fighter-6",
+            "tales-of-arise",
+            "tekken-8",
+            "terraria",
+            "the-last-of-us-part-1",
+            "the-last-of-us-part-2",
+            "the-quarry",
+            "the-division-2",
+            "tunic",
+            "uncharted-4",
+            "uncharted-lost-legacy",
+            "wo-long-fallen-dynasty",
+            "wwe-2k24"
+        ]
+    }
+}

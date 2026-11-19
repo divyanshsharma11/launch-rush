@@ -1,5 +1,6 @@
-// payment-mock connector (design §3). This piece: InboundVerifier only (design §5.2 steps 1-2).
-// Scheme copied from Stripe: header `Mock-Signature: t=<unix seconds>,v1=<hex HMAC-SHA256(secret, "<t>.<raw body>")>`.
+// payment-mock connector (design §3): the InboundVerifier for the webhook ingress, and the Connector that
+// calls the mock provider's API. Signature scheme copied from Stripe:
+// header `Mock-Signature: t=<unix seconds>,v1=<hex HMAC-SHA256(secret, "<t>.<raw body>")>`.
 import { createHmac, timingSafeEqual } from 'node:crypto';
 
 export class InvalidSignatureError extends Error {
@@ -46,4 +47,99 @@ function parseHeader(value) {
     throw new InvalidSignatureError('malformed Mock-Signature header');
   }
   return { t: Number(times[0]), signatures };
+}
+
+// A non-2xx reply from the provider; code is the provider's error code when its body has one.
+export class ProviderHttpError extends Error {
+  constructor(status, code, retryAfter) {
+    super(`payment provider replied HTTP ${status}${code ? ` ${code}` : ''}`);
+    this.status = status;
+    this.code = code;
+    this.retryAfter = retryAfter;
+  }
+}
+
+export class UnsupportedActionError extends Error {}
+
+const RETRYABLE = Object.freeze({ kind: 'retryable' });
+const PERMANENT = Object.freeze({ kind: 'permanent' });
+
+// baseUrl: the provider's origin. apiKey: sent as a Bearer token, never in errors or logs.
+export function createPaymentConnector({ baseUrl, apiKey, healthTimeoutMs = 10_000 }) {
+  async function call(path, { method = 'POST', body, headers, timeoutMs }) {
+    const res = await fetch(new URL(path, baseUrl), {
+      method,
+      headers: { Authorization: `Bearer ${apiKey}`, ...(body && { 'Content-Type': 'application/json' }), ...headers },
+      body: body && JSON.stringify(body),
+      signal: AbortSignal.timeout(timeoutMs),
+    });
+    const text = await res.text();
+    if (!res.ok) throw new ProviderHttpError(res.status, errorCode(text), res.headers.get('retry-after'));
+    return JSON.parse(text);
+  }
+
+  // A missing key must not be sent as the text "undefined": without the header the provider answers 400.
+  const keyHeader = (ctx) => (ctx.idempotencyKey ? { 'Idempotency-Key': ctx.idempotencyKey } : {});
+
+  const actions = {
+    charge: ({ orderId, amountMinor, currency }, ctx) =>
+      call('/charges', {
+        body: { orderId, amountMinor, currency },
+        headers: { ...keyHeader(ctx), ...(ctx.runId && { 'X-Sim-Run': ctx.runId }) },
+        timeoutMs: ctx.timeoutMs,
+      }),
+    refund: ({ paymentId }, ctx) =>
+      call('/refunds', { body: { paymentId }, headers: keyHeader(ctx), timeoutMs: ctx.timeoutMs }),
+    resend_webhook: ({ paymentId }, ctx) =>
+      call(`/payments/${encodeURIComponent(paymentId)}/resend-webhook`, { timeoutMs: ctx.timeoutMs }),
+    redeliver_failed: ({ maxAgeMs }, ctx) =>
+      call('/deliveries/redeliver-failed', { body: { maxAgeMs }, timeoutMs: ctx.timeoutMs }),
+  };
+
+  return {
+    id: 'payment-mock',
+    capabilities: Object.keys(actions),
+    async execute(action, payload, ctx) {
+      if (!Object.hasOwn(actions, action)) throw new UnsupportedActionError(`payment-mock has no action ${action}`);
+      return actions[action](payload, ctx);
+    },
+    classifyError,
+    async healthCheck() {
+      try {
+        await call('/health', { method: 'GET', timeoutMs: healthTimeoutMs });
+        return true;
+      } catch {
+        return false;
+      }
+    },
+  };
+}
+
+// 4xx other than 408/429 means the request itself is wrong, so a retry fails the same way.
+// 5xx, 408, timeouts, network errors and anything unrecognised are retried.
+function classifyError(err) {
+  if (err instanceof UnsupportedActionError) return PERMANENT;
+  if (!(err instanceof ProviderHttpError)) return RETRYABLE;
+  if (err.status === 429) {
+    const retryAfterMs = parseRetryAfter(err.retryAfter);
+    return retryAfterMs === null ? RETRYABLE : { kind: 'rateLimited', retryAfterMs };
+  }
+  return err.status >= 400 && err.status < 500 && err.status !== 408 ? PERMANENT : RETRYABLE;
+}
+
+// Retry-After is delay-seconds or an HTTP-date.
+function parseRetryAfter(value) {
+  if (value === null) return null;
+  if (/^\d+$/.test(value)) return Number(value) * 1000;
+  const at = Date.parse(value);
+  return Number.isNaN(at) ? null : Math.max(0, at - Date.now());
+}
+
+function errorCode(text) {
+  try {
+    const code = JSON.parse(text)?.error?.code;
+    return typeof code === 'string' ? code : null;
+  } catch {
+    return null;
+  }
 }
