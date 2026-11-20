@@ -1,0 +1,246 @@
+{
+    "metrics": {
+        "checks": {
+            "fails": 0,
+            "passes": 9535,
+            "value": 1
+        },
+        "http_req_blocked": {
+            "p(90)": 0,
+            "p(95)": 0,
+            "avg": 0.01712115315315316,
+            "min": 0,
+            "med": 0,
+            "max": 24.0402
+        },
+        "data_received": {
+            "count": 7936257,
+            "rate": 23679.06212239053
+        },
+        "pay_to_completed_ms": {
+            "p(95)": 1550,
+            "avg": 1160.203674374406,
+            "min": 501,
+            "med": 1025,
+            "max": 3153,
+            "p(90)": 1538
+        },
+        "http_req_failed": {
+            "passes": 0,
+            "fails": 16650,
+            "value": 0
+        },
+        "http_req_tls_handshaking": {
+            "avg": 0,
+            "min": 0,
+            "med": 0,
+            "max": 0,
+            "p(90)": 0,
+            "p(95)": 0
+        },
+        "iterations": {
+            "count": 3189,
+            "rate": 9.514879509106548
+        },
+        "http_reqs": {
+            "count": 16650,
+            "rate": 49.67787514161932
+        },
+        "data_sent": {
+            "count": 3145519,
+            "rate": 9385.147155410887
+        },
+        "http_req_duration": {
+            "med": 10.47635,
+            "max": 1668.906,
+            "p(90)": 26.789540000000002,
+            "p(95)": 33.378919999999994,
+            "avg": 14.058601915915945,
+            "min": 0.5214
+        },
+        "http_req_sending": {
+            "min": 0,
+            "med": 0,
+            "max": 17.1622,
+            "p(90)": 0,
+            "p(95)": 0,
+            "avg": 0.031060342342342333
+        },
+        "http_req_waiting": {
+            "avg": 13.698771519519555,
+            "min": 0.4869,
+            "med": 10.257850000000001,
+            "max": 199.0485,
+            "p(90)": 26.417090000000005,
+            "p(95)": 33.085485
+        },
+        "http_req_connecting": {
+            "p(95)": 0,
+            "avg": 0.008219789789789789,
+            "min": 0,
+            "med": 0,
+            "max": 11.8544,
+            "p(90)": 0
+        },
+        "http_req_receiving": {
+            "p(90)": 0.6218300000000001,
+            "p(95)": 0.7933549999999999,
+            "avg": 0.3287700540540536,
+            "min": 0,
+            "med": 0,
+            "max": 1660.7336
+        },
+        "vus": {
+            "max": 32,
+            "value": 1,
+            "min": 0
+        },
+        "http_req_duration{expected_response:true}": {
+            "avg": 14.058601915915945,
+            "min": 0.5214,
+            "med": 10.47635,
+            "max": 1668.906,
+            "p(90)": 26.789540000000002,
+            "p(95)": 33.378919999999994
+        },
+        "orders_not_completed": {
+            "count": 32,
+            "rate": 0.09547699726917827
+        },
+        "vus_max": {
+            "min": 50,
+            "max": 50,
+            "value": 50
+        },
+        "iteration_duration": {
+            "avg": 1201.9183139228564,
+            "min": 13.4274,
+            "med": 1083.3639,
+            "max": 3256.0668,
+            "p(90)": 1592.99348,
+            "p(95)": 1632.10322
+        },
+        "orders_completed": {
+            "count": 3157,
+            "rate": 9.419402511837369
+        }
+    },
+    "setup_data": {
+        "gameIds": [
+            "alan-wake-2",
+            "a-plague-tale-innocence",
+            "armored-core-6",
+            "assassins-creed-valhalla",
+            "astro-bot",
+            "a-way-out",
+            "baldurs-gate-3",
+            "battlefield-2042",
+            "bloodborne",
+            "cod-mw3",
+            "celeste",
+            "control",
+            "cuphead",
+            "cyberpunk-2077",
+            "dark-souls-3",
+            "days-gone",
+            "dead-cells",
+            "dead-space-remake",
+            "death-stranding",
+            "demons-souls-2020",
+            "detroit-become-human",
+            "diablo-4",
+            "disco-elysium",
+            "dragons-dogma-2",
+            "ea-sports-fc-24",
+            "elden-ring",
+            "f1-24",
+            "ff7-remake",
+            "final-fantasy-16",
+            "ghost-of-tsushima",
+            "ghostrunner",
+            "god-of-war-2018",
+            "god-of-war-ragnarok",
+            "gta-5",
+            "gta-6",
+            "gran-turismo-7",
+            "gris",
+            "hades",
+            "helldivers-2",
+            "hi-fi-rush",
+            "hollow-knight",
+            "horizon-forbidden-west",
+            "horizon-zero-dawn",
+            "inside-limbo-double-pack",
+            "it-takes-two",
+            "journey",
+            "lego-star-wars-skywalker-saga",
+            "lies-of-p",
+            "like-a-dragon-infinite-wealth",
+            "little-nightmares-2",
+            "lords-of-the-fallen-2023",
+            "spider-man-2",
+            "spider-man-miles-morales",
+            "mlb-the-show-24",
+            "monster-hunter-world",
+            "mortal-kombat-1",
+            "nba-2k24",
+            "nier-automata",
+            "nioh-2",
+            "octopath-traveler-2",
+            "persona-3-reload",
+            "persona-5-royal",
+            "ratchet-clank-rift-apart",
+            "red-dead-redemption-2",
+            "remnant-2",
+            "resident-evil-4-remake",
+            "resident-evil-village",
+            "returnal",
+            "sekiro",
+            "star-wars-jedi-fallen-order",
+            "star-wars-jedi-survivor",
+            "stray",
+            "street-fighter-6",
+            "tales-of-arise",
+            "tekken-8",
+            "terraria",
+            "the-last-of-us-part-1",
+            "the-last-of-us-part-2",
+            "the-quarry",
+            "the-division-2",
+            "tunic",
+            "uncharted-4",
+            "uncharted-lost-legacy",
+            "wo-long-fallen-dynasty",
+            "wwe-2k24"
+        ]
+    },
+    "root_group": {
+        "id": "d41d8cd98f00b204e9800998ecf8427e",
+        "groups": {},
+        "checks": {
+            "session created": {
+                "name": "session created",
+                "path": "::session created",
+                "id": "fe128c16ddba45c98ab17e9ba70507fd",
+                "passes": 3189,
+                "fails": 0
+            },
+            "buy accepted": {
+                "passes": 3189,
+                "fails": 0,
+                "name": "buy accepted",
+                "path": "::buy accepted",
+                "id": "e51d3ce7495dbae47a77bdc4976320b3"
+            },
+            "pay accepted": {
+                "name": "pay accepted",
+                "path": "::pay accepted",
+                "id": "55b548001b00169da8f062db2d181d6e",
+                "passes": 3157,
+                "fails": 0
+            }
+        },
+        "name": "",
+        "path": ""
+    }
+}

@@ -54,9 +54,17 @@ test('redis settings: host and port read, port parsed as a number', () => {
 });
 
 test('api settings: host defaults to 127.0.0.1, API_HOST overrides it, PORT required', () => {
-  assert.deepEqual({ ...loadConfig(ENV).api }, { host: '127.0.0.1', port: 3000 });
+  assert.deepEqual({ ...loadConfig(ENV).api }, { host: '127.0.0.1', port: 3000, trustProxy: 0 });
   assert.equal(loadConfig({ ...ENV, API_HOST: '0.0.0.0' }).api.host, '0.0.0.0');
   assert.throws(() => loadConfig({ ...ENV, PORT: undefined }), /PORT is not set/);
+});
+
+test('trust proxy: 0 by default, TRUST_PROXY sets the hop count, anything else is rejected', () => {
+  assert.equal(loadConfig({ ...ENV, TRUST_PROXY: '' }).api.trustProxy, 0);
+  assert.equal(loadConfig({ ...ENV, TRUST_PROXY: '1' }).api.trustProxy, 1);
+  for (const bad of ['true', '-1', '1.5', '11']) {
+    assert.throws(() => loadConfig({ ...ENV, TRUST_PROXY: bad }), /TRUST_PROXY must be an integer from 0 to 10/);
+  }
 });
 
 test('log level: default info, a pino level accepted, anything else rejected', () => {

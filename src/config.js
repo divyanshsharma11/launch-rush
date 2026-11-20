@@ -6,8 +6,9 @@ import { join } from 'node:path';
 export function loadConfig(env) {
   return Object.freeze({
     api: Object.freeze({
-      host: env.API_HOST || '127.0.0.1', // all interfaces only when set, e.g. 0.0.0.0 at hosting (step 11)
+      host: env.API_HOST || '127.0.0.1', // all interfaces only when set, e.g. 0.0.0.0 in the containers (compose.prod.yaml)
       port: port(env, 'PORT'),
+      trustProxy: trustProxy(env), // number of proxies in front of the API; 1 behind Caddy (compose.prod.yaml)
     }),
     payment: Object.freeze({
       webhookSecret: secret(env, 'PAYMENT_WEBHOOK_SECRET'),
@@ -161,6 +162,13 @@ function required(env, name) {
 function port(env, name) {
   const value = Number(required(env, name));
   if (!Number.isInteger(value) || value < 1 || value > 65535) throw new Error(`${name} must be an integer from 1 to 65535`);
+  return value;
+}
+
+// Express "trust proxy" as a hop count (expressjs.com/en/guide/behind-proxies): 0 reads the client IP from the socket only.
+function trustProxy(env) {
+  const value = env.TRUST_PROXY === undefined || env.TRUST_PROXY === '' ? 0 : Number(env.TRUST_PROXY);
+  if (!Number.isInteger(value) || value < 0 || value > 10) throw new Error('TRUST_PROXY must be an integer from 0 to 10');
   return value;
 }
 

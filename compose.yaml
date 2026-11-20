@@ -1,4 +1,4 @@
-# Local development services only. Production hosts are chosen at roadmap step 11.
+# Local development services only. The deployment is compose.prod.yaml.
 services:
   redis:
     image: redis:8

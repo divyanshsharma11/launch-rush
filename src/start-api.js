@@ -88,6 +88,7 @@ async function listen({ config, logger, db, webhookQueue, redis, wakeups, runQue
   const streamRouter = createStreamRouter({ orders, stream, config: config.stream, logger });
 
   const app = express();
+  app.set('trust proxy', config.api.trustProxy);
   app.use(createWebhookRouter({ payments, logger })); // before express.json(): raw body for the signature
   app.use('/api', createApiRouter({ orders, runs, rateLimiter, cors: config.cors, streamRouter, logger }));
   if (config.admin) {
