@@ -32,6 +32,16 @@ The 50 and 100 runs overloaded this machine: k6 could not start the target numbe
 
 Oversold 0, orders lost 0, completed without invoice 0, paid but not invoiced or refunded 0, stock mismatches none, leaked holds none, in all three saved files. `drain-times.txt` records how long the worker's backlog took to clear after each run ended: 0 s for rate 10, and not within 400 s for rates 50 and 100.
 
+## Longer run, 2026-11-19 (same laptop, same setup)
+
+Same script and machine as above (all services, k6 and the Docker containers on one laptop, local PostgreSQL and Redis), with `RATE=10`, ramp 30 s, hold 300 s. Raw files: `2026-11-19-rate10-5min.json`, `2026-11-19-rate10-5min-scoreboard.json`.
+
+| RATE | Iterations | Completed | Not completed | Dropped by k6 | HTTP requests | HTTP failures | Pay to completed (median / p95) | Request duration (p95) |
+|---|---|---|---|---|---|---|---|---|
+| 10 | 3189 | 3157 | 32 | 0 | 16650 | 0 | 1.02 s / 1.55 s | 33 ms |
+
+The 32 not completed were buyers of games that had sold out (the order was `waitlisted`, the script does not wait on a waitlist), checked in `order_transitions`: all 32 went `waitlisted`, then `reserved` later when a copy was released. The scoreboard (oversold 0, lost 0, nothing paid but not invoiced, no stock mismatch, no leaked holds) counts every shop order in the local database, so its `sold` figure includes earlier runs and test runs, not only this one.
+
 ## Not measured
 
-A second machine, a sized host, a run longer than about 2 minutes, the SSE stream under load, the ERP slow or down faults, and a flood of webhook calls straight at `/webhooks/payment` (the webhook path is exercised only through Pay).
+A second machine, a sized host, a run longer than about 5 minutes, the SSE stream under load, the ERP slow or down faults, and a flood of webhook calls straight at `/webhooks/payment` (the webhook path is exercised only through Pay).

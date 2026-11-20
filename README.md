@@ -515,7 +515,7 @@ flowchart LR
 - **Two env files on purpose.** `.env` is for local development and the tests; `.env.prod` (git-ignored) is for the deployment. Keeping them apart is what stops the tests from deleting rows in a hosted database.
 - **PostgreSQL is hosted, not a container.** The deployment is set up for a hosted PostgreSQL reached through its **transaction pooler** (port 6543), with TLS: `PGSSLMODE=require` plus the provider's CA certificate (`certs/supabase-ca.crt`, public) mounted and trusted via `NODE_EXTRA_CA_CERTS`, because `pg` treats `require` as full verification. Each transaction in the code runs on one checked-out client and the locks are transaction-level advisory locks (`pg_advisory_xact_lock`), which is why transaction pooling works here.
 - **Backups.** `backup.sh` writes a nightly data-only `pg_dump` of the `public`, `paysim` and `erpsim` schemas and keeps 7 days. Restore is: run the migrations on an empty database, truncate the seeded tables, then `pg_restore --data-only --disable-triggers`. A full schema-and-data dump from the hosted service did not restore into plain PostgreSQL in our test, which is why it is data-only.
-- Behind a proxy, Express `trust proxy` must be set, or all callers share one rate-limit key.
+- Behind a proxy, Express `trust proxy` must be set, or all callers share one rate-limit key. `TRUST_PROXY` is that setting as a hop count (default 0, so a client cannot fake its IP when the API is reached directly); `compose.prod.yaml` sets it to 1 for one reverse proxy in front of the API.
 
 The step-by-step host setup (server size, domain, TLS) is not part of this repo yet.
 

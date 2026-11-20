@@ -1,6 +1,7 @@
 # The whole backend in containers: docker compose --env-file .env.prod -f compose.prod.yaml up -d --build
-# Settings come from .env.prod (git-ignored), including the PG* values of the hosted Postgres (Supabase). Only the API publishes
-# a port; Redis and the simulators stay on the private network. The migrations run before the services start.
+# Settings come from .env.prod (git-ignored), including the PG* values of the hosted Postgres (Supabase). Only the API (on
+# 127.0.0.1) and Caddy (80/443, HTTPS for SITE_ADDRESS) publish ports; Redis and the simulators stay on the private network.
+# The migrations run before the services start.
 # A separate project name keeps its volumes apart from compose.yaml.
 name: launch-rush-prod
 
@@ -11,6 +12,7 @@ x-app: &app
     NODE_EXTRA_CA_CERTS: /certs/supabase-ca.crt
     REDIS_HOST: redis
     API_HOST: 0.0.0.0
+    TRUST_PROXY: "1"
     PAYMENT_PROVIDER_HOST: 0.0.0.0
     ERP_SIM_HOST: 0.0.0.0
     PAYMENT_WEBHOOK_URL: http://api:${PORT:-3000}/webhooks/payment
@@ -71,5 +73,29 @@ services:
     command: ["node", "sims/erp-simulator/server.js"]
     depends_on: *ready
 
+  caddy:
+    image: caddy:2.11
+    environment:
+      SITE_ADDRESS: ${SITE_ADDRESS:-localhost}
+      API_UPSTREAM: api:${PORT:-3000}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./caddy:/etc/caddy:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      - api
+    restart: always
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
 volumes:
   redis-data:
+  caddy-data:
+  caddy-config:
