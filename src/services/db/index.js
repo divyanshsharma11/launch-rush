@@ -3,8 +3,8 @@ import pg from 'pg';
 
 // onOrderChange(orderId, sessionId?): called after an order or one of its deliveries changed, so open streams can
 // read it (design §8.4); a new order also passes its session. It must not throw or reject; the default does nothing.
-export function createDb({ logger, onOrderChange = () => {} }) {
-  const pool = new pg.Pool();
+export function createDb({ logger, onOrderChange = () => {}, connectTimeoutMs = 10_000, queryTimeoutMs = 10_000 }) {
+  const pool = new pg.Pool({ connectionTimeoutMillis: connectTimeoutMs, query_timeout: queryTimeoutMs });
   // Without a listener, an idle client's error would crash the process (node-postgres pool docs).
   pool.on('error', (err) => logger.error({ err }, 'postgres idle client error'));
 
